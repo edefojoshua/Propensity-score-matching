@@ -10,6 +10,7 @@ ssc install psmatch2
 * Get the data and transformed it for analysis
 use "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1t.dta"
 gen length_of_stay = 0
+
 replace length_of_stay  = LoS
 
 save "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1tr.dta", replace
@@ -26,7 +27,9 @@ ttest length_of_stay, by(t)
 * difference is 357 minutes higer in non-SDEC group than in SDEC group
 
 *Check if biased by confounding variable
+
 encode sex, generate(sex1)
+
 logistic t Age sex1
 
 * odd ratio showed (1.02113, .8347214 ), It is clear that the relationship between our intervention (SDEC) and outcome is being confounded by Age and Sex, each having the effect in this case of increasing the observed treatment effect.

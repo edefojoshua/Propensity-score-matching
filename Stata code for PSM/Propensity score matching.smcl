@@ -1,0 +1,124 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Stata code for PSM\Propensity score matching.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}16 Jan 2024, 11:30:56
+
+{com}. do "C:\Users\joe62\AppData\Local\Temp\STD2f70_000000.tmp"
+{txt}
+{com}. *************************************
+. * Propensity score matchinh using Stata software
+. * Joshua W. Edefo
+. * email: edefojoshua2000@yahoo.com
+. * 16/01/2024
+. *************************************
+. * Install the module
+. ssc install psmatch2
+{txt}checking {hilite:psmatch2} consistency and verifying not already installed...
+all files already exist and are up to date.
+
+{com}. 
+. * Get the data and transformed it for analysis
+. use "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1t.dta"
+{txt}
+{com}. gen length_of_stay = 0
+{txt}
+{com}. 
+. replace length_of_stay  = LoS
+{txt}(212 real changes made)
+
+{com}. 
+. save "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1tr.dta", replace
+{txt}{p 0 4 2}
+file {bf}
+C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1tr.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\Glangwili pathway 1tr.dta"
+{txt}
+{com}. 
+. append using "C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Desktop\HES_Extract_SDEC_in_Stata\Joshua\Data\STATA\data from me\Glangwili ED patients with length of stay(2).dta"
+{txt}
+{com}. 
+. order NHSNumber Age sex t length_of_stay
+{txt}
+{com}. 
+. * Conduct t test to check for difference between the SDEC group and non-SDEC group without considering confounding variables
+. ttest length_of_stay, by(t)
+
+{txt}Two-sample t test with equal variances
+{hline 9}{c TT}{hline 68}
+   Group{col 10}{c |}{col 16}Obs{col 27}Mean{col 35}Std. err.{col 47}Std. dev.{col 59}[95% conf. interval]
+{hline 9}{c +}{hline 68}
+       0 {c |}{res}{col 12}  1,146{col 22} 601.3857{col 34} 31.12583{col 46} 1053.691{col 58} 540.3156{col 70} 662.4558
+       {txt}1 {c |}{res}{col 12}    212{col 22} 244.4528{col 34} 8.432966{col 46} 122.7858{col 58} 227.8292{col 70} 261.0765
+{txt}{hline 9}{c +}{hline 68}
+Combined {c |}{res}{col 12}  1,358{col 22} 545.6642{col 34} 26.53189{col 46}  977.728{col 58} 493.6162{col 70} 597.7122
+{txt}{hline 9}{c +}{hline 68}
+    diff {c |}{res}{col 22} 356.9329{col 34} 72.48006{col 58} 214.7476{col 70} 499.1181
+{txt}{hline 9}{c BT}{hline 68}
+    diff = mean({res}0{txt}) - mean({res}1{txt})                                      t = {res}  4.9246
+{txt}H0: diff = 0                                     Degrees of freedom = {res}    1356
+
+    {txt}Ha: diff < 0                 Ha: diff != 0                 Ha: diff > 0
+ Pr(T < t) = {res}1.0000         {txt}Pr(|T| > |t|) = {res}0.0000          {txt}Pr(T > t) = {res}0.0000
+{txt}
+{com}. 
+. * difference is 357 minutes higer in non-SDEC group than in SDEC group
+. 
+. *Check if biased by confounding variable
+. 
+. encode sex, generate(sex1)
+{txt}
+{com}. 
+. logistic t Age sex1
+{res}
+{txt}{col 1}Logistic regression{col 57}{lalign 13:Number of obs}{col 70} = {res}{ralign 6:1,358}
+{txt}{col 57}{lalign 13:LR chi2({res:2})}{col 70} = {res}{ralign 6:46.13}
+{txt}{col 57}{lalign 13:Prob > chi2}{col 70} = {res}{ralign 6:0.0000}
+{txt}{col 1}{lalign 14:Log likelihood}{col 15} = {res}{ralign 10:-565.17245}{txt}{col 57}{lalign 13:Pseudo R2}{col 70} = {res}{ralign 6:0.0392}
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}           t{col 14}{c |} Odds ratio{col 26}   Std. err.{col 38}      z{col 46}   P>|z|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 9}Age {c |}{col 14}{res}{space 2}  1.02113{col 26}{space 2} .0032727{col 37}{space 1}    6.52{col 46}{space 3}0.000{col 54}{space 4} 1.014736{col 67}{space 3} 1.027565
+{txt}{space 8}sex1 {c |}{col 14}{res}{space 2} .8347214{col 26}{space 2} .1276441{col 37}{space 1}   -1.18{col 46}{space 3}0.237{col 54}{space 4} .6185536{col 67}{space 3} 1.126434
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0791911{col 26}{space 2} .0229707{col 37}{space 1}   -8.74{col 46}{space 3}0.000{col 54}{space 4} .0448509{col 67}{space 3} .1398239
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{p 0 6 2}Note: {bf:_cons} estimates baseline odds{txt}.{p_end}
+
+{com}. 
+. * odd ratio showed (1.02113, .8347214 ), It is clear that the relationship between our intervention (SDEC) and outcome is being confounded by Age and Sex, each having the effect in this case of increasing the observed treatment effect.
+. 
+. * Propensity score matching using nearest neighbour which is by default
+. teffects psmatch ( length_of_stay) (t Age sex1)
+{res}
+{txt}Treatment-effects estimation{col 48}Number of obs {col 67}= {res}     1,358
+{txt:Estimator}{col 16}:{res: propensity-score matching}{col 48}{txt:Matches: requested }{col 67}{txt:=}          1
+{txt:Outcome model}{col 16}:{res: matching}{txt}{col 63}min {col 67}= {res}         1
+{txt:Treatment model}{col 16}:{res: logit}{col 63}{txt:max }{col 67}{txt:=}         20
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}   AI robust
+{col 1}length_of_~y{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      z{col 46}   P>|z|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}ATE          {txt}{c |}
+{space 11}t {c |}
+{space 3}(1 vs 0)  {c |}{col 14}{res}{space 2} -413.271{col 26}{space 2} 31.98799{col 37}{space 1}  -12.92{col 46}{space 3}0.000{col 54}{space 4}-475.9663{col 67}{space 3}-350.5757
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+. * After psmatch (propensity score matching), the difference is now 413 minutes higher in non-SDDEC group compared to SDEC group 
+. 
+{txt}end of do-file
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\joe62\OneDrive - Aberystwyth University\Apps\Stata code for PSM\Propensity score matching.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}16 Jan 2024, 11:32:30
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
